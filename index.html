@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PC Games Hub</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:Arial,Tahoma,sans-serif}
+body{background:#080d16;color:#fff;min-height:100vh}
+header{position:sticky;top:0;z-index:20;background:#101827;border-bottom:1px solid #263449}
+.nav{max-width:1200px;margin:auto;padding:15px 20px;display:flex;align-items:center;justify-content:space-between;gap:15px}
+.logo{font-size:24px;font-weight:bold;color:#00d9ff}.logo span{color:#fff}
+nav{display:flex;gap:18px;align-items:center}nav a{color:#ddd;text-decoration:none}
+button{cursor:pointer;border:0}
+.btn{background:#00bcd4;color:white;padding:10px 16px;border-radius:8px;font-weight:bold}
+.btn.secondary{background:#253247}.btn.danger{background:#c62828}
+.hero{text-align:center;padding:65px 20px;background:linear-gradient(135deg,#101c32,#071018)}
+.hero h1{font-size:45px;margin-bottom:12px}.hero h1 span{color:#00d9ff}
+.hero p{color:#aebbd0;margin-bottom:25px}
+.search{max-width:650px;margin:auto;display:flex}.search input{flex:1;padding:15px;border:0;outline:0;border-radius:8px 0 0 8px;font-size:16px}.search button{padding:0 22px;background:#00bcd4;color:#fff;border-radius:0 8px 8px 0}
+.container{max-width:1200px;margin:auto;padding:35px 20px}
+.toolbar{display:flex;justify-content:space-between;align-items:center;gap:15px;flex-wrap:wrap;margin-bottom:20px}
+.filters{display:flex;gap:8px;flex-wrap:wrap}.filter{background:#172337;color:#ddd;padding:9px 14px;border-radius:20px}.filter.active{background:#00bcd4;color:#fff}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:20px}
+.card{background:#111a29;border:1px solid #25334a;border-radius:13px;overflow:hidden;transition:.25s}.card:hover{transform:translateY(-4px);border-color:#00bcd4}
+.card img{width:100%;height:190px;object-fit:cover}.info{padding:16px}.info h3{margin-bottom:8px}.info p{color:#9eabc0;font-size:14px;line-height:1.6;height:45px;overflow:hidden}.meta{display:flex;justify-content:space-between;color:#7defff;font-size:13px;margin:12px 0}
+.actions{display:flex;gap:8px}.actions .btn{flex:1}
+footer{text-align:center;padding:35px;color:#8492a7;border-top:1px solid #202c40;margin-top:30px}
+.modal{position:fixed;inset:0;background:#000b;display:none;align-items:center;justify-content:center;padding:20px;z-index:50}.modal.show{display:flex}
+.box{background:#111a29;width:min(700px,100%);max-height:90vh;overflow:auto;border:1px solid #34445d;border-radius:14px;padding:25px;position:relative}
+.close{position:absolute;left:18px;top:12px;font-size:28px;color:#aaa;cursor:pointer}
+.box h2{color:#00d9ff;margin-bottom:15px}.box p{line-height:1.8;color:#c8d1df;margin:10px 0}.box input,.box select,.box textarea{width:100%;padding:12px;margin:7px 0 12px;border-radius:7px;border:1px solid #34445d;background:#0a1220;color:white;outline:none}.box textarea{min-height:100px;resize:vertical}
+.tabs{display:flex;gap:8px;margin-bottom:15px}.tabs button{flex:1;padding:11px;background:#1d2a3d;color:#ddd;border-radius:7px}.tabs button.active{background:#00bcd4;color:#fff}
+.hidden{display:none!important}.notice{background:#1c293c;padding:12px;border-radius:8px;color:#b9c7d9;font-size:13px;margin-bottom:15px}
+.userbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.admin{border:1px solid #00bcd4;background:#0c1725;padding:5px 9px;border-radius:20px;color:#72efff;font-size:12px}
+@media(max-width:700px){nav{display:none}.hero h1{font-size:33px}.search{flex-direction:column;gap:8px}.search input,.search button{border-radius:8px;padding:14px}.nav{padding:12px}.card img{height:170px}}
+</style>
+</head>
+<body>
+
+<header>
+<div class="nav">
+<div class="logo">🎮 PC <span>Games Hub</span></div>
+<nav><a href="#games">الألعاب</a><a href="#categories">التصنيفات</a></nav>
+<div id="userBar" class="userbar"></div>
+</div>
+</header>
+
+<section class="hero">
+<h1>عالم ألعاب <span>الكمبيوتر</span></h1>
+<p>ابحث عن ألعابك المفضلة واستكشف مكتبة الألعاب</p>
+<div class="search"><input id="search" placeholder="ابحث عن لعبة..."><button onclick="render()">🔍 بحث</button></div>
+</section>
+
+<main class="container">
+<div id="categories" class="toolbar">
+<div class="filters">
+<button class="filter active" onclick="setCat('all',this)">الكل</button>
+<button class="filter" onclick="setCat('action',this)">أكشن</button>
+<button class="filter" onclick="setCat('racing',this)">سباق</button>
+<button class="filter" onclick="setCat('adventure',this)">مغامرات</button>
+<button class="filter" onclick="setCat('sports',this)">رياضة</button>
+</div>
+</div>
+
+<div id="games" class="grid"></div>
+<p id="empty" class="hidden" style="text-align:center;padding:50px;color:#9eabc0">لا توجد نتائج.</p>
+</main>
+
+<footer>© 2026 <b style="color:#00d9ff">PC Games Hub</b> — منصة ألعاب تجريبية</footer>
+
+<!-- Auth -->
+<div id="authModal" class="modal">
+<div class="box">
+<span class="close" onclick="closeModal('authModal')">×</span>
+<div class="tabs"><button id="loginTab" class="active" onclick="showAuth('login')">تسجيل الدخول</button><button id="signupTab" onclick="showAuth('signup')">إنشاء حساب</button></div>
+<div id="loginForm">
+<h2>تسجيل الدخول</h2>
+<input id="loginEmail" type="email" placeholder="البريد الإلكتروني">
+<input id="loginPass" type="password" placeholder="كلمة المرور">
+<button class="btn" style="width:100%" onclick="login()">دخول</button>
+</div>
+<div id="signupForm" class="hidden">
+<h2>إنشاء حساب</h2>
+<input id="signupName" placeholder="الاسم">
+<input id="signupEmail" type="email" placeholder="البريد الإلكتروني">
+<input id="signupPass" type="password" placeholder="كلمة المرور">
+<button class="btn" style="width:100%" onclick="signup()">إنشاء الحساب</button>
+</div>
+<p id="authMsg"></p>
+</div>
+</div>
+
+<!-- Details -->
+<div id="detailsModal" class="modal">
+<div class="box"><span class="close" onclick="closeModal('detailsModal')">×</span><div id="details"></div></div>
+</div>
+
+<!-- Admin -->
+<div id="adminModal" class="modal">
+<div class="box">
+<span class="close" onclick="closeModal('adminModal')">×</span>
+<h2>🛠️ لوحة تحكم المسؤول</h2>
+<div class="notice">الحساب المسؤول المحدد في هذا الإصدار: <b>aw334948@gmail.com</b><br>هذه لوحة إدارة محلية للتجربة. لا تضع كلمة مرور حقيقية أو بيانات حساسة هنا عند نشر الموقع.</div>
+<input id="gName" placeholder="اسم اللعبة">
+<select id="gCat"><option value="action">أكشن</option><option value="racing">سباق</option><option value="adventure">مغامرات</option><option value="sports">رياضة</option></select>
+<input id="gImage" placeholder="رابط صورة اللعبة">
+<input id="gDownload" placeholder="رابط التحميل الرسمي/القانوني">
+<input id="gSize" placeholder="الحجم، مثال: 12 GB">
+<input id="gRating" type="number" min="0" max="5" step=".1" placeholder="التقييم من 5">
+<textarea id="gDesc" placeholder="وصف اللعبة"></textarea>
+<button class="btn" style="width:100%;margin-bottom:15px" onclick="addGame()">➕ إضافة لعبة</button>
+<div id="adminGames"></div>
+</div>
+</div>
+
+<script>
+const ADMIN_EMAIL="aw334948@gmail.com";
+const defaultGames=[
+{name:"Minecraft",category:"adventure",image:"https://images.unsplash.com/photo-1606092195730-5d7b9af1efc5?auto=format&fit=crop&w=800&q=80",download:"https://www.minecraft.net/",size:"متغير",rating:4.8,desc:"لعبة بناء واستكشاف عالم مفتوح."},
+{name:"Forza Horizon",category:"racing",image:"https://images.unsplash.com/photo-1503736334956-4c8f8e92946d?auto=format&fit=crop&w=800&q=80",download:"https://www.xbox.com/",size:"متغير",rating:4.7,desc:"لعبة سباقات وعالم مفتوح للسيارات."},
+{name:"Grand Theft Auto V",category:"action",image:"https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=800&q=80",download:"https://store.rockstargames.com/",size:"متغير",rating:4.7,desc:"لعبة أكشن وعالم مفتوح."},
+{name:"EA SPORTS FC",category:"sports",image:"https://images.unsplash.com/photo-1579952363873-27f3bade9f55?auto=format&fit=crop&w=800&q=80",download:"https://www.ea.com/games/ea-sports-fc",size:"متغير",rating:4.5,desc:"لعبة كرة قدم للكمبيوتر."}
+];
+let games=JSON.parse(localStorage.getItem("pcgames")||"null")||defaultGames;
+let users=JSON.parse(localStorage.getItem("pcusers")||"[]");
+let currentUser=JSON.parse(localStorage.getItem("pcuser")||"null");
+let category="all";
+
+function save(){localStorage.setItem("pcgames",JSON.stringify(games));localStorage.setItem("pcusers",JSON.stringify(users));}
+function catName(c){return {action:"أكشن",racing:"سباق",adventure:"مغامرات",sports:"رياضة"}[c]||c}
+
+function render(){
+const q=document.getElementById("search").value.toLowerCase().trim();
+const list=games.filter(g=>(category==="all"||g.category===category)&&g.name.toLowerCase().includes(q));
+const grid=document.getElementById("games");grid.innerHTML="";
+document.getElementById("empty").classList.toggle("hidden",list.length>0);
+list.forEach((g,i)=>{
+const realIndex=games.indexOf(g);
+grid.innerHTML+=`<article class="card"><img src="${esc(g.image)}" onerror="this.src='https://via.placeholder.com/800x500?text=Game'"><div class="info"><h3>${esc(g.name)}</h3><p>${esc(g.desc)}</p><div class="meta"><span>${catName(g.category)}</span><span>⭐ ${g.rating||0}/5</span></div><div class="actions"><button class="btn" onclick="details(${realIndex})">التفاصيل</button><button class="btn secondary" onclick="openDownload(${realIndex})">تحميل</button></div></div></article>`;
+});
+}
+function setCat(c,b){category=c;document.querySelectorAll(".filter").forEach(x=>x.classList.remove("active"));b.classList.add("active");render()}
+function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
+
+function openModal(id){document.getElementById(id).classList.add("show")}
+function closeModal(id){document.getElementById(id).classList.remove("show")}
+function showAuth(type){document.getElementById("loginForm").classList.toggle("hidden",type!=="login");document.getElementById("signupForm").classList.toggle("hidden",type!=="signup");document.getElementById("loginTab").classList.toggle("active",type==="login");document.getElementById("signupTab").classList.toggle("active",type==="signup");document.getElementById("authMsg").textContent=""}
+function authMessage(t){document.getElementById("authMsg").textContent=t}
+
+function signup(){
+const name=document.getElementById("signupName").value.trim(),email=document.getElementById("signupEmail").value.trim().toLowerCase(),pass=document.getElementById("signupPass").value;
+if(!name||!email||!pass)return authMessage("املأ كل البيانات.");
+if(pass.length<6)return authMessage("كلمة المرور يجب أن تكون 6 أحرف على الأقل.");
+if(users.some(u=>u.email===email))return authMessage("هذا البريد مسجل بالفعل.");
+users.push({name,email,pass});save();authMessage("تم إنشاء الحساب. يمكنك تسجيل الدخول الآن.");showAuth("login");document.getElementById("loginEmail").value=email;
+}
+function login(){
+const email=document.getElementById("loginEmail").value.trim().toLowerCase(),pass=document.getElementById("loginPass").value;
+if(email===ADMIN_EMAIL){
+const adminPass=localStorage.getItem("adminPass");
+if(!adminPass){if(!pass)return authMessage("في أول دخول للمسؤول، اكتب كلمة المرور التي تريد استخدامها، وسيتم حفظها محليًا على هذا الجهاز.");localStorage.setItem("adminPass",pass);}
+else if(pass!==adminPass)return authMessage("كلمة مرور المسؤول غير صحيحة.");
+currentUser={name:"Administrator",email,admin:true};
+}else{
+const u=users.find(x=>x.email===email&&x.pass===pass);
+if(!u)return authMessage("البريد الإلكتروني أو كلمة المرور غير صحيحة.");
+currentUser={name:u.name,email:u.email,admin:false};
+}
+localStorage.setItem("pcuser",JSON.stringify(currentUser));closeModal("authModal");updateUserBar();
+}
+function logout(){currentUser=null;localStorage.removeItem("pcuser");updateUserBar();closeModal("adminModal")}
+function updateUserBar(){
+const bar=document.getElementById("userBar");
+if(!currentUser){bar.innerHTML='<button class="btn" onclick="showAuth(\'login\');openModal(\'authModal\')">تسجيل الدخول</button>';return}
+bar.innerHTML=`<span>👤 ${esc(currentUser.name)}</span>${currentUser.admin?'<span class="admin">ADMIN</span><button class="btn" onclick="openAdmin()">لوحة التحكم</button>':''}<button class="btn secondary" onclick="logout()">خروج</button>`;
+}
+function showAuth(t){document.getElementById("loginForm").classList.toggle("hidden",t!=="login");document.getElementById("signupForm").classList.toggle("hidden",t!=="signup");document.getElementById("loginTab").classList.toggle("active",t==="login");document.getElementById("signupTab").classList.toggle("active",t==="signup");document.getElementById("authMsg").textContent=""}
+
+function details(i){
+const g=games[i];
+document.getElementById("details").innerHTML=`<img src="${esc(g.image)}" style="width:100%;max-height:300px;object-fit:cover;border-radius:10px"><h2>${esc(g.name)}</h2><p>${esc(g.desc)}</p><p>التصنيف: ${catName(g.category)}<br>الحجم: ${esc(g.size)}<br>التقييم: ⭐ ${g.rating||0}/5</p><button class="btn" style="width:100%" onclick="openDownload(${i})">⬇️ تحميل</button>`;
+openModal("detailsModal");
+}
+function openDownload(i){const g=games[i];if(g.download)window.open(g.download,"_blank");else alert("لم يتم إضافة رابط تحميل لهذه اللعبة.");}
+
+function openAdmin(){
+if(!currentUser?.admin){showAuth("login");openModal("authModal");return}
+renderAdmin();openModal("adminModal");
+}
+function addGame(){
+const name=document.getElementById("gName").value.trim(),cat=document.getElementById("gCat").value,img=document.getElementById("gImage").value.trim(),download=document.getElementById("gDownload").value.trim(),size=document.getElementById("gSize").value.trim(),rating=Number(document.getElementById("gRating").value)||0,desc=document.getElementById("gDesc").value.trim();
+if(!name||!img||!download)return alert("اكتب اسم اللعبة والصورة ورابط التحميل.");
+games.push({name,category:cat,image:img,download,size:size||"غير محدد",rating:Math.min(5,rating),desc:desc||"لا يوجد وصف."});save();render();renderAdmin();alert("تمت إضافة اللعبة.");
+}
+function renderAdmin(){
+const box=document.getElementById("adminGames");box.innerHTML="";
+games.forEach((g,i)=>{box.innerHTML+=`<div style="background:#0b1320;border:1px solid #27364d;padding:12px;border-radius:8px;margin:8px 0;display:flex;justify-content:space-between;gap:8px;align-items:center"><span>${esc(g.name)}</span><button class="btn danger" onclick="deleteGame(${i})">حذف</button></div>`});
+}
+function deleteGame(i){if(confirm("هل تريد حذف اللعبة؟")){games.splice(i,1);save();render();renderAdmin()}}
+
+document.getElementById("search").addEventListener("input",render);
+document.querySelectorAll(".modal").forEach(m=>m.addEventListener("click",e=>{if(e.target===m)m.classList.remove("show")}));
+updateUserBar();render();
+</script>
+</body>
+</html>
